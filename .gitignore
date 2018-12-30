@@ -1,2 +1,4 @@
 *.ini
 \trash
+*.json
+/__pycache__

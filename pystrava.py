@@ -63,7 +63,6 @@ class strava_user(object):
             if len(temp_list)<200:
                 list_completed = True
 
-
         return activity_list
 
     def get_activity_streams(self,actid_list)->list:
@@ -76,7 +75,7 @@ class strava_user(object):
         if isinstance(actid_list,(float,int,str)):
             actid_list = [str(actid_list)]
 
-        act_stream_list = []
+        act_stream_dict = dict()
         for idx, id in enumerate(actid_list):
 
             url = (self.brl + '/activities/{id}/streams').format(id=id)
@@ -89,21 +88,33 @@ class strava_user(object):
 
             r = requests.request("GET", url, data='', headers=headers, params=querystring)
 
-            act_stream_list = act_stream_list + [js.loads(r.content)]
+            act_stream_dict[str(id)] = js.loads(r.content)
 
-        return act_stream_list
+        return act_stream_dict
 
-    # def create_df_by(self,by='start_date',activity_list=None)->pd.DataFrame:
-    #     '''
-    #
-    #     :param by:
-    #     :param activity_list:
-    #     :return:
-    #     '''
-    #     datetime.strptime(act_list[0]['start_date'], '%Y-%m-%dT%H:%M:%SZ').timestamp()
-    #
-    #     for i in activity_list:
+    def get_starred_segments(self) -> list:
+        '''
 
+        :param self:
+        :return:
+        '''
 
+        url = self.brl + '/segments/starred/'
+        querystring = {'page': 0,
+                       'per_page': 200}
 
+        headers = self.std_get_headers
+        list_completed = False
+        idx = 0
+        seg_list = []
+        while not (list_completed):
+            idx += 1
+            querystring['page'] = idx
+            r = requests.request("GET", url, data='', headers=headers, params=querystring)
+            temp_list = js.loads(r.content)
+            seg_list = seg_list + temp_list
 
+            if len(temp_list) < 200:
+                list_completed = True
+
+        return seg_list
